@@ -16,6 +16,8 @@ async function get_data(cas) {
     })
 }
 
+
+
 app.on('click', async function (params) {
     let cas = params.name
     console.log(params)

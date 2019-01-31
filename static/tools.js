@@ -256,6 +256,15 @@ class GragChart {
         };
     }
 
+
+    showRelaData(data){
+        // this.keys = key;
+        // let nodes = [];
+        // let links = [];
+        this.cass = [{name: data.type}]
+        this.show(data)
+    }
+
     show(d, merge = false) {
         // var d = {nodes, links};
         console.log(d);

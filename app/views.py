@@ -10,7 +10,7 @@ client = MongoClient('47.100.104.246', 27017, username='root', password='rootadm
 db = client['Data']
 collection = db['cn_olbase']
 
-from app.func import save, gen_rela, add_img
+from app.func import save, gen_rela, add_img, relactionship_search
 from app.es import search as sh
 
 # Create your views here.
@@ -64,6 +64,23 @@ def relaction(request):
     #         keys.append(down)
     print(data)
     return JsonResponse(dict(data=data, code=0))
+
+def relactionshipSearch(request):
+    target = request.GET.get('target', '')
+    source = request.GET.get('source', '')
+    level = request.GET.get('level', '3')
+    # types = request.GET.get('type', '')
+    types = ['合成路线', "上游", "下游"]
+    # print(target)
+    # print(source)
+    # print(types)
+    if target and source:
+        result = []
+        for typ in types:
+            relas = relactionship_search(target, source, typ, level)
+            result += relas
+        return JsonResponse(dict(code=0, data=result))
+    return JsonResponse(dict(code=-1, msg='params is null'))
 
 
 

@@ -12,6 +12,7 @@ def search(kw, pageIndex, pageSize, cate=None):
             }
         }
     }
+
     resp = es.search(index='knowledgegraph',
                      doc_type='KnowledgeGraph',
                      from_=(pageIndex - 1) * pageSize,
@@ -21,8 +22,19 @@ def search(kw, pageIndex, pageSize, cate=None):
     items = []
     for hit in resp.get('hits',{}).get('hits',[]):
         content = json.loads(hit['_source']['content'])
-        if cate and cate in content['category']:
-            items.append(content)
+        if cate:
+            # flag = False
+            for cat in cate.split(','):
+                if cat in content['category']:
+                    items.append(content)
+                    break
+                # if cat in content['category']:
+                #     flag = True
+                # else:
+                #     flag = False
+            # print(flag)
+            # if flag:
+            #     items.append(content)
         elif not cate:
             items.append(content)
     return {'pageIndex': pageIndex,

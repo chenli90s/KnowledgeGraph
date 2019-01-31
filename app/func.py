@@ -20,8 +20,10 @@ headers = {
 
 def set_imgs(cas):
     num = cas.split('-')[0]
-    num = num[-3:] if len(num)>3 else num
-    return 'http://data.huaxuejia.cn/casimg/%s/%s.png'%(num, cas), 'http://data.huaxuejia.cn/casimg/%s/%s.gif'%(num, cas)
+    num = num[-3:] if len(num) > 3 else num
+    return 'http://data.huaxuejia.cn/casimg/%s/%s.png' % (num, cas), 'http://data.huaxuejia.cn/casimg/%s/%s.gif' % (
+        num, cas)
+
 
 def loading_updownstream(content):
     eles = etree.HTML(content)
@@ -49,6 +51,7 @@ def loading_updownstream(content):
     for i in item:
         content.append(i.xpath('string(.)'))
     return {'ups': up, 'downs': down}, content
+
 
 def local_page(cas):
     """
@@ -104,7 +107,7 @@ def synthesis(item):
     # get pre
     for index, url in enumerate(urls):
         if url == '→':
-            val = item.xpath('./ul/li[%d]/p[2]/text()'%(index + 1))
+            val = item.xpath('./ul/li[%d]/p[2]/text()' % (index + 1))
             if val:
                 pre = val[0]
     str_url = ''.join(urls).split('→')
@@ -117,7 +120,6 @@ def synthesis(item):
             front.append(dict(cas=cas, url=imgs[index]))
         else:
             back.append(dict(cas=cas, url=imgs[index]))
-
     return {'front': front, 'back': back, 'pre': pre}
 
 
@@ -215,29 +217,45 @@ def save(item):
 def gen_rela(cas):
     synts, updown, items = parse_synthesis(cas)
 
+    build_synt_rela(synts)
+    build_updowns_rela(updown, cas)
 
-    # updown = parse_updownstream(url)
-    # syns = []
-    # for item in synts:
-    #     pre = item[-1]
-    #     print(''.join(item[:-1]))
-    #     syn = ''.join(item[:-1]).split('→')
-    #     front = syn[0].split('+')
-    #     back = syn[1].split('+')
-    #     syns.append({'front': front, 'back': back, 'pre': pre})
     return {'synts': synts, 'updown': updown, 'items': items, 'info': {'cas': cas, 'url': add_img(cas)}}
 
 
-def get_Node(label, title):
+def build_synt_rela(synts):
+    for synt in synts:
+        label = ':'.join(map(lambda x: x['cas'], synt['front'])) + 'pre' + ':'.join(
+            map(lambda x: x['cas'], synt['back']))
+        rela = get_Node(label, synt['pre'])
+        for front in synt['front']:
+            node = get_Node('cas', front['cas'], url=front['url'])
+            build_relationship(node, '合成路线', rela)
+        for back in synt['back']:
+            node = get_Node('cas', back['cas'], url=back['url'])
+            build_relationship(rela, '合成路线', node)
+
+
+def build_updowns_rela(updowns, cas):
+    core = get_Node('cas', cas)
+    for ups in updowns['ups']:
+        node = get_Node('cas', ups['cas'], url=ups['url'])
+        build_relationship(node, '上游', core)
+    for downs in updowns['downs']:
+        node = get_Node('cas', downs['cas'], url=downs['url'])
+        build_relationship(node, '下游', core)
+
+
+def get_Node(label, title, **kwargs):
     """
     with label and title search, if it's not exist will be create node.
     :param label:
     :param title:
     :return:
     """
-    node = matcher.match(label, title=title).first()
+    node = matcher.match(label, title=title, **kwargs).first()
     if not node:
-        node = Node(label, title=title)
+        node = Node(label, title=title, **kwargs)
         graph.create(node)
     return node
 
@@ -247,8 +265,6 @@ def build_relationship(node, label, n):
         rela_cas = Relationship(node, label, n)
         rel = node | n | rela_cas
         graph.create(rel)
-
-
 
 
 def save_synthesis(synts, cas):
@@ -284,6 +300,7 @@ def save_updown(updowns, cas):
         node = get_Node('cas', down)
         build_relationship(node, '下游', cas)
 
+
 def add_img(cas):
     imgs = set_imgs(cas)
     url = imgs[0]
@@ -296,8 +313,85 @@ def add_img(cas):
     return ''
 
 
+def relactionship_search(cas1, cas2, rela, level):
+    cql = "match data=(na:cas{title:'%s'})-[:%s*1..%s]->(nb:cas{title:'%s'}) return data" % (cas1, rela, level, cas2)
+    print(cql)
+    resp = graph.run(cql)
+    if len(resp.data())<1:
+        cql = "match data=(na:cas{title:'%s'})-[:%s*1..%s]->(nb:cas{title:'%s'}) return data" % (cas2, rela, level, cas1)
+    # nodes = []
+    # links = []
+    # keys = []
+    resp = graph.run(cql)
+    paths = []
+    for index, r in enumerate(resp):
+        path = tranform_rela_node(r, rela)
+        paths.append(path)
+        # subgraph = r.to_subgraph()
+        # tranform_keys_node(subgraph.start_node, keys, nodes)
+        # tranform_keys_node(subgraph.end_node, keys, nodes)
+        # for count, link in enumerate(subgraph.relationships):
+        #     for node in link.nodes:
+        #         tranform_keys_node(node, keys, nodes)
+        #     source = link.nodes[0]
+        #     target = link.nodes[1]
+        #     links.append({
+        #         'source': source.get('title', '') if source.get('url', '') else str(source.labels),
+        #         'target': target.get('title', '') if target.get('url', '') else str(target.labels),
+        #         'value': rela,
+        #         'name': rela,
+        #         'lineStyle':
+        #             {'normal': {}}
+        #     })
+    # return {'nodes': nodes, "links": links, 'type': rela}
+    return paths
+
+
+def tranform_keys_node(node, keys, nodes):
+    title = node.get('title', '')
+    url = node.get('url', '')
+    flag = title if url else str(node.labels)
+    if not url and str(node.labels) == ':cas':
+        return
+    if flag not in keys:
+        keys.append(flag)
+        nodes.append({
+            'id': flag,
+            'name': flag,
+            'symbol': "image://" + url if url else "diamond",
+            'symbolSize': 30 if url else 15,
+            'label': {'normal': {'show': True if url else False}}
+        })
+
+
+def tranform_rela_node(r, rela):
+    subgraph = r.to_subgraph()
+    nodes = []
+    links = []
+    keys = []
+    tranform_keys_node(subgraph.start_node, keys, nodes)
+    tranform_keys_node(subgraph.end_node, keys, nodes)
+    for count, link in enumerate(subgraph.relationships):
+        for node in link.nodes:
+            tranform_keys_node(node, keys, nodes)
+        source = link.nodes[0]
+        target = link.nodes[1]
+        links.append({
+            'source': source.get('title', '') if source.get('url', '') else str(source.labels),
+            'target': target.get('title', '') if target.get('url', '') else str(target.labels),
+            'value': rela,
+            'name': rela,
+            'lineStyle':
+                {'normal': {}}
+        })
+    return {'nodes': nodes, "links": links, 'type': rela}
+
 if __name__ == '__main__':
     # a = parse_synthesis('765-43-5')
     # print(a)
     # print(parse_updownstream('http://baike.molbase.cn/cidian/340'))
-    print(gen_rela('103-90-2'))
+    # print(gen_rela('765-43-5'))
+    a = relactionship_search('7757-82-6', '7664-93-9', '合成路线')
+    import json
+
+    print(json.dumps(a))

@@ -93,7 +93,10 @@
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <script>
 
-    var chart = new GragChart(document.getElementById('container'))
+var chart = new GragChart(document.getElementById('container'))
+var d = {"nodes": [{"id": "7757-82-6", "name": "7757-82-6", "symbol": "image://http://data.huaxuejia.cn/casimg/757/7757-82-6.png", "symbolSize": 30, "label": {"normal": {"show": true}}}, {"id": ":`7757-82-6pre7664-93-9:1310-73-2`", "name": ":`7757-82-6pre7664-93-9:1310-73-2`", "symbol": "diamond", "symbolSize": 15, "label": {"normal": {"show": true}}}, {"id": "7664-93-9", "name": "7664-93-9", "symbol": "image://http://data.huaxuejia.cn/casimg/664/7664-93-9.gif", "symbolSize": 30, "label": {"normal": {"show": true}}}], "links": [{"source": "7757-82-6", "target": ":`7757-82-6pre7664-93-9:1310-73-2`", "value": "\u5408\u6210\u8def\u7ebf", "name": "\u5408\u6210\u8def\u7ebf", "lineStyle": {"normal": {}}}, {"source": ":`7757-82-6pre7664-93-9:1310-73-2`", "target": "7664-93-9", "value": "\u5408\u6210\u8def\u7ebf", "name": "\u5408\u6210\u8def\u7ebf", "lineStyle": {"normal": {}}}], "type": "\u5408\u6210\u8def\u7ebf"}
+
+chart.showRelaData(d)
 
 
 </script>
