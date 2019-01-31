@@ -317,8 +317,9 @@ def relactionship_search(cas1, cas2, rela, level):
     cql = "match data=(na:cas{title:'%s'})-[:%s*1..%s]->(nb:cas{title:'%s'}) return data" % (cas1, rela, level, cas2)
     print(cql)
     resp = graph.run(cql)
-    if len(resp.data())<1:
-        cql = "match data=(na:cas{title:'%s'})-[:%s*1..%s]->(nb:cas{title:'%s'}) return data" % (cas2, rela, level, cas1)
+    if len(resp.data()) < 1:
+        cql = "match data=(na:cas{title:'%s'})-[:%s*1..%s]->(nb:cas{title:'%s'}) return data" % (
+            cas2, rela, level, cas1)
     # nodes = []
     # links = []
     # keys = []
@@ -328,11 +329,11 @@ def relactionship_search(cas1, cas2, rela, level):
         path = tranform_rela_node(r, rela)
         paths.append(path)
         # subgraph = r.to_subgraph()
-        # tranform_keys_node(subgraph.start_node, keys, nodes)
-        # tranform_keys_node(subgraph.end_node, keys, nodes)
+        # tranform_keys_node(subgraph.start_node, keys, nodes, links)
+        # tranform_keys_node(subgraph.end_node, keys, nodes, links)
         # for count, link in enumerate(subgraph.relationships):
         #     for node in link.nodes:
-        #         tranform_keys_node(node, keys, nodes)
+        #         tranform_keys_node(node, keys, nodes, links)
         #     source = link.nodes[0]
         #     target = link.nodes[1]
         #     links.append({
@@ -347,7 +348,7 @@ def relactionship_search(cas1, cas2, rela, level):
     return paths
 
 
-def tranform_keys_node(node, keys, nodes):
+def tranform_keys_node(node, keys, nodes, links):
     title = node.get('title', '')
     url = node.get('url', '')
     flag = title if url else str(node.labels)
@@ -360,20 +361,70 @@ def tranform_keys_node(node, keys, nodes):
             'name': flag,
             'symbol': "image://" + url if url else "diamond",
             'symbolSize': 30 if url else 15,
-            'label': {'normal': {'show': True if url else False}}
+            'label': {'normal': {'show': True if url else False}},
+            'value': title
         })
 
+
+def load_rela_data(keys, nodes, links):
+    for key in keys:
+        if len(key.split('pre'))>1:
+            flag = key
+            front, back = flag[2:-1].split('pre')
+            front = front.split(':')
+            back = back.split(':')
+            print(front)
+            print(back)
+            for f in front:
+                nd = get_Node('cas', f)
+                if nd.get('title') not in keys:
+                    nodes.append({
+                        'id': nd.get('title'),
+                        'name': nd.get('title'),
+                        'symbol': "image://" + nd.get('url'),
+                        'symbolSize': 30,
+                        'label': {'normal': {'show': True}},
+                        'value': nd.get('title')
+                    })
+                    links.append({
+                        'source': nd.get('title'),
+                        'target': flag,
+                        'value': "合成路线",
+                        'name': "合成路线",
+                        'lineStyle':
+                            {'normal': {}}
+                    })
+            for f in back:
+                nd = get_Node('cas', f)
+                if nd.get('title') not in keys:
+                    nodes.append({
+                        'id': nd.get('title'),
+                        'name': nd.get('title'),
+                        'symbol': "image://" + nd.get('url'),
+                        'symbolSize': 30,
+                        'label': {'normal': {'show': True}},
+                        'value': nd.get('title')
+                    })
+                    links.append({
+                        'source': flag,
+                        'target': nd.get('title'),
+                        'value': "合成路线",
+                        'name': "合成路线",
+                        'lineStyle':
+                            {'normal': {}}
+                    })
 
 def tranform_rela_node(r, rela):
     subgraph = r.to_subgraph()
     nodes = []
     links = []
     keys = []
-    tranform_keys_node(subgraph.start_node, keys, nodes)
-    tranform_keys_node(subgraph.end_node, keys, nodes)
+    links_keys = []
+    tranform_keys_node(subgraph.start_node, keys, nodes, links)
+    tranform_keys_node(subgraph.end_node, keys, nodes, links)
     for count, link in enumerate(subgraph.relationships):
         for node in link.nodes:
-            tranform_keys_node(node, keys, nodes)
+            tranform_keys_node(node, keys, nodes, links)
         source = link.nodes[0]
         target = link.nodes[1]
         links.append({
@@ -384,7 +435,9 @@ def tranform_rela_node(r, rela):
             'lineStyle':
                 {'normal': {}}
         })
+    load_rela_data(keys, nodes, links)
     return {'nodes': nodes, "links": links, 'type': rela}
+
 
 if __name__ == '__main__':
     # a = parse_synthesis('765-43-5')
