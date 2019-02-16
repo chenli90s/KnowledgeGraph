@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', serve, {'document_root': './templates', 'path':'index.html'}),
     path('search/', search),
+    path('cas/', get_data),
     path('relaction/', relaction),
     path('searchrela/', relactionshipSearch)
 ]

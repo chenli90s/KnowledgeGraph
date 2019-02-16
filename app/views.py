@@ -12,6 +12,7 @@ collection = db['cn_olbase']
 
 from app.func import save, gen_rela, add_img, relactionship_search
 from app.es import search as sh
+from app.es import get_data_cas
 
 # Create your views here.
 def search(request):
@@ -38,6 +39,11 @@ def search(request):
     # if cas:
     #     del cas['_id']
     return JsonResponse(dict(code=0, data=sh(kw, pageIndex, pageSize, cate)))
+
+def get_data(request):
+    kw = request.GET.get('cas', '')
+    return JsonResponse(dict(code=0, data=get_data_cas(kw)))
+
 
 def relaction(request):
     cas = request.GET.get('cas', '')

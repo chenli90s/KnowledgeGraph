@@ -44,5 +44,19 @@ def search(kw, pageIndex, pageSize, cate=None):
             }
 
 
+def get_data_cas(cas):
+    # body = {
+    #     'query': {
+    #         'cas': cas
+    #     }
+    # }
+
+    resp = es.search(index='knowledgegraph',
+                     doc_type='KnowledgeGraph',
+                     q='_id:%s'%cas)
+
+    return json.loads(resp['hits']['hits'][0]['_source']['content'])
+
 if __name__ == '__main__':
-    print(search('9-氯-9-苯基氧杂蒽', 1, 10))
+    # print(search('9-氯-9-苯基氧杂蒽', 1, 10))
+    print(get_data_cas('56803-37-3'))
