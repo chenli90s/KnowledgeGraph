@@ -439,6 +439,22 @@ def tranform_rela_node(r, rela):
     return {'nodes': nodes, "links": links, 'type': rela}
 
 
+def func_search_new(keyword):
+    # url = "http://news.baidu.com/ns?rn=11&ie=utf-8&tn=newstitle&word{}".format(keyword)
+    url = "http://news.baidu.com/ns?ie=utf-8&cl=2&ct=1&bs=intitle%3A%28%E8%8B%AF%29&rsv_bp=1&sr=0&f=8&prevct=no&tn=newstitle&word={}".format(keyword)
+    html = requests.get(url, headers=headers).content.decode()
+    etree_html = etree.HTML(html)
+    all_news_data = etree_html.xpath('//*[@class="result title"]')
+    new_list = []
+    if len(all_news_data) > 0:
+        for i in all_news_data:
+            per_dict = {}
+            per_dict['title'] = i.xpath('./h3/a')[0].xpath('string(.)').replace('\n', '').strip()
+            per_dict['link'] = i.xpath('./h3/a/@href')[0]
+            per_dict['source_web'] = i.xpath('./div[@class="c-title-author"]/text()')[0]
+            new_list.append(per_dict)
+    return {'data': new_list}
+
 if __name__ == '__main__':
     # a = parse_synthesis('765-43-5')
     # print(a)
