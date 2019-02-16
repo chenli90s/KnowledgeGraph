@@ -401,7 +401,7 @@ def func_search_new(keyword):
             per_dict['link'] = i.xpath('./h3/a/@href')[0]
             per_dict['source_web'] = i.xpath('./div[@class="c-title-author"]/text()')[0]
             new_list.append(per_dict)
-    return new_list
+    return {'data': new_list}
 
 
 if __name__ == '__main__':
