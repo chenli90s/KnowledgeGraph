@@ -10,7 +10,7 @@ client = MongoClient('47.100.104.246', 27017, username='root', password='rootadm
 db = client['Data']
 collection = db['cn_olbase']
 
-from app.func import save, gen_rela, add_img, relactionship_search
+from app.func import save, gen_rela, add_img, relactionship_search, func_search_new
 from app.es import search as sh
 
 # Create your views here.
@@ -81,6 +81,12 @@ def relactionshipSearch(request):
             result += relas
         return JsonResponse(dict(code=0, data=result))
     return JsonResponse(dict(code=-1, msg='params is null'))
+
+
+def search_new(request):
+    keyword = request.GET.get('kw', '')
+    dict_new_data = func_search_new(keyword)
+    return JsonResponse(dict_new_data)
 
 
 
