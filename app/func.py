@@ -2,7 +2,7 @@ import requests
 from lxml import etree
 from py2neo import Graph, Node, Relationship, NodeMatcher, RelationshipMatcher
 import time
-
+import random
 graph = Graph('http://localhost:7474', username='neo4j', password='admin')
 
 matcher = NodeMatcher(graph)
@@ -454,6 +454,54 @@ def func_search_new(keyword):
             per_dict['source_web'] = i.xpath('./div[@class="c-title-author"]/text()')[0]
             new_list.append(per_dict)
     return {'data': new_list}
+
+
+# 文献检索
+from KnowledgeGraph.settings import IP_LIST
+
+
+def get_wx(cas, page=None):
+    url = str('https://www.chemsrc.com/PaperResult/{}/'.format(str(cas)))
+    if page:
+        url = url + '?page={}'.format(str(page))
+
+    proxy_ip = '213.23.122.170:443'
+    res_status = False
+    while not res_status:
+        try:
+            request_doc = requests.get(url, headers=headers, proxies={'https': proxy_ip, 'http': proxy_ip})
+            res_status = True
+        except Exception as e:
+            print(str(e))
+            print('proxy_ip = ' + str(proxy_ip))
+            proxy_ip = random.choice(IP_LIST)
+
+    if request_doc.status_code == 200:
+        html_doc = request_doc.content.decode()
+
+        # with open('123.html', 'w', encoding='utf-8')as f:
+        #     f.write(html_doc)
+
+        xpath_doc = etree.HTML(html_doc)
+        info_times = xpath_doc.xpath('//*[@id="idxTbl"]/tr')
+
+        j = 1
+        docInfo = []
+        for i in info_times:
+            info = {}
+            e = xpath_doc.xpath('//*[@id="idxTbl"]/tr[{}]/td/a'.format(str(j)))
+            info['herf'] = 'https://www.chemsrc.com/' + e[0].attrib['href']
+            info['title'] = e[0].text
+            info['author'] = xpath_doc.xpath('//*[@id="idxTbl"]/tr[{}]/td/p[1]'.format(str(j)))[0].text
+            info['periodical'] = xpath_doc.xpath('//*[@id="idxTbl"]/tr[{}]/td/p[2]'.format(str(j)))[0].text
+            info['abstract'] = xpath_doc.xpath('//*[@id="idxTbl"]/tr[{}]/td/p[3]/i'.format(str(j)))[0].text
+            if info['abstract'] == None:
+                info['abstract'] = ''
+            docInfo.append(info)
+            j = j + 1
+        return docInfo
+    else:
+        return request_doc.status_code
 
 if __name__ == '__main__':
     # a = parse_synthesis('765-43-5')
