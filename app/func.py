@@ -3,7 +3,7 @@ from lxml import etree
 from py2neo import Graph, Node, Relationship, NodeMatcher, RelationshipMatcher
 import time
 import random
-graph = Graph('http://localhost:7474', username='neo4j', password='admin')
+graph = Graph('http://10.102.20.251:7474', username='neo4j', password='admin')
 
 matcher = NodeMatcher(graph)
 rela_matcher = RelationshipMatcher(graph)
@@ -497,6 +497,10 @@ def get_wx(cas, page=None):
             info['abstract'] = xpath_doc.xpath('//*[@id="idxTbl"]/tr[{}]/td/p[3]/i'.format(str(j)))[0].text
             if info['abstract'] == None:
                 info['abstract'] = ''
+            if info['author'] == None:
+                info['author'] = ''
+            if info['title'] == None:
+                info['title'] = ''
             docInfo.append(info)
             j = j + 1
         return docInfo
