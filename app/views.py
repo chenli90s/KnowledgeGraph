@@ -44,7 +44,11 @@ def search(request):
 
 def get_data(request):
     kw = request.GET.get('cas', '')
-    return JsonResponse(dict(code=0, data=get_data_cas(kw)))
+    res = get_data_cas(kw)
+    if res:
+        return JsonResponse(dict(code=0, data=get_data_cas(kw)))
+    else:
+        return JsonResponse(dict(code=-1, data='数据不存在'))
 
 
 def relaction(request):

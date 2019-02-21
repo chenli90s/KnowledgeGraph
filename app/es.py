@@ -54,7 +54,8 @@ def get_data_cas(cas):
     resp = es.search(index='knowledgegraph',
                      doc_type='KnowledgeGraph',
                      q='_id:%s'%cas)
-
+    if len(resp['hits']['hits']) < 1:
+        return ''
     return json.loads(resp['hits']['hits'][0]['_source']['content'])
 
 if __name__ == '__main__':

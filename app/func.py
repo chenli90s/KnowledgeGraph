@@ -94,6 +94,8 @@ def parse_synthesis(cas):
     eles, updowns, its = local_page(cas)
     items = eles.xpath('//div[@class="synRoute"]')
     routes = []
+    if len(items)>5:
+        items = items[:4]
     for item in items:
         route = synthesis(item)
         routes.append(route)
@@ -132,6 +134,10 @@ def parse_updownstream(url):
     eles = etree.HTML(resp.content)
     ups = eles.xpath('//ul[@id="up-list"]/li/p[1]/a/text()')
     downs = eles.xpath('//ul[@id="down-list"]/li/p[1]/a/text()')
+    if len(ups) > 3:
+        ups = ups[:3]
+    if len(downs) > 3:
+        downs = downs[:3]
     ups = list(map(lambda x: x.strip(), ups))
     downs = list(map(lambda x: x.strip(), downs))
     return {'ups': ups, 'downs': downs}
