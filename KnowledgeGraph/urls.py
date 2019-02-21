@@ -26,5 +26,6 @@ urlpatterns = [
     path('cas/', get_data),
     path('search_new/', search_new),
     path('relaction/', relaction),
-    path('searchrela/', relactionshipSearch)
+    path('searchrela/', relactionshipSearch),
+    path('searchDoc/', search_literature),
 ]

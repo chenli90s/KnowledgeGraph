@@ -148,3 +148,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+ippoolsfile = 'ip_pools_3.txt'
+
+with open(os.path.join(STATICFILES_DIRS[0], ippoolsfile), 'r', encoding='utf-8') as f:
+    ip0 = f.readlines()
+    IP_LIST = [i.replace('\n', '') for i in ip0]

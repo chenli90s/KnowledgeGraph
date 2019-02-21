@@ -13,6 +13,8 @@ collection = db['cn_olbase']
 from app.func import save, gen_rela, add_img, relactionship_search, func_search_new
 from app.es import search as sh
 from app.es import get_data_cas
+from app.func import get_wx
+
 
 # Create your views here.
 def search(request):
@@ -132,5 +134,13 @@ if __name__ == '__main__':
     print(data)
 
 
-
+# 文献检索
+def search_literature(request):
+    cas = request.GET.get('cas', None)
+    page = request.GET.get('page', None)
+    if cas:
+        doc_info = get_wx(cas, page)
+        return JsonResponse({'docInfo': doc_info})
+    else:
+        return JsonResponse({'error': "cas can't be NULL"})
 
