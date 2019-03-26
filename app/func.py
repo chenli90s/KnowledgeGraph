@@ -3,7 +3,7 @@ from lxml import etree
 from py2neo import Graph, Node, Relationship, NodeMatcher, RelationshipMatcher
 import time
 import random
-graph = Graph('http://10.102.20.251:7474', username='neo4j', password='admin')
+graph = Graph('http://10.102.24.46:9292', username='neo4j', password='admin')
 
 matcher = NodeMatcher(graph)
 rela_matcher = RelationshipMatcher(graph)
@@ -32,7 +32,7 @@ def loading_updownstream(content):
     try:
         ups = updowns[0].xpath('./li/p[1]/text()')
         ups_img = updowns[0].xpath('./li/div/a/img/@src')
-        pass
+
         for index, i in enumerate(ups):
             up.append(dict(cas=i, url=ups_img[index]))
     except:
@@ -122,7 +122,7 @@ def synthesis(item):
             front.append(dict(cas=cas, url=imgs[index]))
         else:
             back.append(dict(cas=cas, url=imgs[index]))
-    return {'front': front, 'back': back, 'pre': pre}
+    return {'front': front, 'back': back, 'pre': pre, 'conditions': ''}
 
 
 def parse_updownstream(url):
@@ -220,8 +220,14 @@ def save(item):
     save_updown(updown, cas)
 
 
+from app.script import import_molbase
 def gen_rela(cas):
     synts, updown, items = parse_synthesis(cas)
+    synts, updown = import_molbase(cas)
+
+    print(synts)
+    print(updown)
+    print(items)
 
     build_synt_rela(synts)
     build_updowns_rela(updown, cas)
@@ -233,7 +239,7 @@ def build_synt_rela(synts):
     for synt in synts:
         label = ':'.join(map(lambda x: x['cas'], synt['front'])) + 'pre' + ':'.join(
             map(lambda x: x['cas'], synt['back']))
-        rela = get_Node(label, synt['pre'])
+        rela = get_Node(label, synt['pre'], conditions=synt['conditions'])
         for front in synt['front']:
             node = get_Node('cas', front['cas'], url=front['url'])
             build_relationship(node, '合成路线', rela)
@@ -357,6 +363,7 @@ def relactionship_search(cas1, cas2, rela, level):
 def tranform_keys_node(node, keys, nodes, links):
     title = node.get('title', '')
     url = node.get('url', '')
+    conditions = node.get('conditions', '')
     flag = title if url else str(node.labels)
     if not url and str(node.labels) == ':cas':
         return
@@ -368,7 +375,7 @@ def tranform_keys_node(node, keys, nodes, links):
             'symbol': "image://" + url if url else "diamond",
             'symbolSize': 30 if url else 15,
             'label': {'normal': {'show': True if url else False}},
-            'value': title
+            'value': title + conditions if conditions else '',
         })
 
 
@@ -513,12 +520,17 @@ def get_wx(cas, page=None):
     else:
         return request_doc.status_code
 
+
+
+
+
+
 if __name__ == '__main__':
     # a = parse_synthesis('765-43-5')
     # print(a)
     # print(parse_updownstream('http://baike.molbase.cn/cidian/340'))
-    # print(gen_rela('765-43-5'))
-    a = relactionship_search('7757-82-6', '7664-93-9', '合成路线')
-    import json
-
-    print(json.dumps(a))
+    print(gen_rela('765-43-5'))
+    # a = relactionship_search('100-59-4', '149-74-6', '合成路线', '3')
+    # import json
+    #
+    # print(json.dumps(a))
