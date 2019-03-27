@@ -222,17 +222,18 @@ def save(item):
 
 from app.script import import_molbase
 def gen_rela(cas):
-    synts, updown, items = parse_synthesis(cas)
+    # synts, updown, items = parse_synthesis(cas)
     synts, updown = import_molbase(cas)
 
     print(synts)
     print(updown)
-    print(items)
+    # print(items)
 
     build_synt_rela(synts)
     build_updowns_rela(updown, cas)
 
-    return {'synts': synts, 'updown': updown, 'items': items, 'info': {'cas': cas, 'url': add_img(cas)}}
+    # return {'synts': synts, 'updown': updown, 'items': items, 'info': {'cas': cas, 'url': add_img(cas)}}
+    return {'synts': synts, 'updown': updown, 'info': {'cas': cas, 'url': add_img(cas)}}
 
 
 def build_synt_rela(synts):
@@ -373,9 +374,11 @@ def tranform_keys_node(node, keys, nodes, links):
             'id': flag,
             'name': flag,
             'symbol': "image://" + url if url else "diamond",
-            'symbolSize': 30 if url else 15,
-            'label': {'normal': {'show': True if url else False}},
-            'value': title + conditions if conditions else '',
+            'type': 'entity' if url else 'virtual',
+            # 'symbolSize': 30 if url else 15,
+            # 'label': {'normal': {'show': True if url else False}},
+            'value': title,
+            'conditions': conditions if conditions else '',
         })
 
 
@@ -395,17 +398,18 @@ def load_rela_data(keys, nodes, links):
                         'id': nd.get('title'),
                         'name': nd.get('title'),
                         'symbol': "image://" + nd.get('url'),
-                        'symbolSize': 30,
-                        'label': {'normal': {'show': True}},
-                        'value': nd.get('title')
+                        # 'symbolSize': 30,
+                        # 'label': {'normal': {'show': True}},
+                        'value': nd.get('title'),
+                        # 'conditions': nd.get('conditions')
                     })
                     links.append({
                         'source': nd.get('title'),
                         'target': flag,
                         'value': "合成路线",
                         'name': "合成路线",
-                        'lineStyle':
-                            {'normal': {}}
+                        # 'lineStyle':
+                        #     {'normal': {}}
                     })
             for f in back:
                 nd = get_Node('cas', f)
@@ -414,8 +418,8 @@ def load_rela_data(keys, nodes, links):
                         'id': nd.get('title'),
                         'name': nd.get('title'),
                         'symbol': "image://" + nd.get('url'),
-                        'symbolSize': 30,
-                        'label': {'normal': {'show': True}},
+                        # 'symbolSize': 30,
+                        # 'label': {'normal': {'show': True}},
                         'value': nd.get('title')
                     })
                     links.append({
@@ -423,8 +427,8 @@ def load_rela_data(keys, nodes, links):
                         'target': nd.get('title'),
                         'value': "合成路线",
                         'name': "合成路线",
-                        'lineStyle':
-                            {'normal': {}}
+                        # 'lineStyle':
+                        #     {'normal': {}}
                     })
 
 def tranform_rela_node(r, rela):
@@ -526,10 +530,11 @@ def get_wx(cas, page=None):
 
 
 if __name__ == '__main__':
+    # graph.delete_all()
     # a = parse_synthesis('765-43-5')
     # print(a)
     # print(parse_updownstream('http://baike.molbase.cn/cidian/340'))
-    print(gen_rela('765-43-5'))
+    print(gen_rela('947-42-2'))
     # a = relactionship_search('100-59-4', '149-74-6', '合成路线', '3')
     # import json
     #

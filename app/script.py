@@ -6,7 +6,7 @@ translator = Translator(service_urls=['translate.google.cn'])
 
 
 db = pymongo.MongoClient('10.102.24.46', port=27017)
-collection = db['Data']['cn_migration'].find()
+collection = db['Data']['cn_olbase_sup'].find()
 
 es = Elasticsearch('10.102.24.46:9200')
 
@@ -87,10 +87,10 @@ def import_molbase(cas):
         for data in res['data']:
             front = []
             for f in data['upper']:
-                front.append({'cas': f['cas_no'], 'url': 'http'+f['s_pic']})
+                front.append({'cas': f['cas_no'], 'url': 'http'+f['s_pic'], 'name': get_node_name(f['cas_no'])})
             back = []
             for b in data['upper']:
-                back.append({'cas': b['cas_no'], 'url': 'http'+b['s_pic']})
+                back.append({'cas': b['cas_no'], 'url': 'http'+b['s_pic'], 'name': get_node_name(b['cas_no'])})
 
             trans = translator.translate(data['conditions'], src='en', dest='zh-cn').text
             datas.append({'front': front, 'back': back, 'pre': data['yield_all'], 'conditions': trans})
@@ -98,12 +98,12 @@ def import_molbase(cas):
         res = get_tag_data(up_url % id).json()
         ups = []
         for data in res['data']:
-            ups.append({'cas': data['cas_no'], 'url': 'http' + data['s_pic']})
+            ups.append({'cas': data['cas_no'], 'url': 'http' + data['s_pic'], 'name': get_node_name(data['cas_no'])})
 
         res = get_tag_data(down_url % id).json()
         downs = []
         for data in res['data']:
-            downs.append({'cas': data['cas_no'], 'url': 'http' + data['s_pic']})
+            downs.append({'cas': data['cas_no'], 'url': 'http' + data['s_pic'], 'name': get_node_name(data['cas_no'])})
 
         updowns = {'ups': ups, 'downs': downs}
 
@@ -112,6 +112,14 @@ def import_molbase(cas):
 
 
         return datas, updowns
+
+def get_node_name(cas):
+    doc = db['Data']['cn_migration']
+    res = doc.find_one({'cas': cas})
+    if res:
+        return res.get('中文名称', '')
+    return ''
+
 
 if __name__ == '__main__':
     # kw_type = ['CAS号', '中文名称', '中文别名', '英文名称', '英文别名']
@@ -152,7 +160,8 @@ if __name__ == '__main__':
     #     }
     # }
     # es.indices.create(index='knowledgegraph', body=mapping)
-    # import_data()
+    import_data()
     # check_synthesis()
-    import_molbase('1631-83-0')
+    # import_molbase('1631-83-0')
     # print(get_mol_id('5345-47-1'))
+    # es.indices.delete

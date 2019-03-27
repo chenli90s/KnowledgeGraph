@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from pymongo import MongoClient
 
 
-client = MongoClient('47.100.104.246', 27017, username='root', password='rootadmin', authSource='admin', authMechanism='DEFAULT')
+client = MongoClient('10.102.24.46', 27017, username='root', password='rootadmin', authSource='admin', authMechanism='DEFAULT')
 
 
 db = client['Data']
@@ -54,7 +54,14 @@ def get_data(request):
 def relaction(request):
     cas = request.GET.get('cas', '')
     # item = collection.find_one({'CAS号': cas})
+    DB = client['OLBASE']
+    document = DB['cn_olbase_rela']
+    res = document.find_one({'cas': cas})
+    if res:
+        return JsonResponse(dict(data=res['data'], code=0))
     data = gen_rela(cas)
+    document.insert_many([{'cas': cas, 'data': data}])
+
     # sys = data['synts']
     # keys = []
     # for index, i in enumerate(sys):
@@ -74,7 +81,7 @@ def relaction(request):
     #     if down not in keys:
     #         data['updown']['downs'][index] = {'cas': down, 'url': add_img(down)}
     #         keys.append(down)
-    print(data)
+    # print(data)
     return JsonResponse(dict(data=data, code=0))
 
 def relactionshipSearch(request):
@@ -102,36 +109,37 @@ def search_new(request):
 
 
 
-if __name__ == '__main__':
-    cas = '350-03-8'
-    # kw_type = ['CAS号', '中文名称', '中文别名', '英文名称', '英文别名']
-    # item = None
-    # for t in kw_type:
-    #     result = collection.find_one({t: {'$regex': '.*' + kw + '.*'}})
-    #     if result:
-    #         item = result
-    #         break
-    #
-    # save(item)
-    # item = collection.find_one({'CAS号': cas})
-    data = gen_rela(cas)
-    sys = data['synts']
-
-    keys = {}
-    for index, i in enumerate(sys):
-        for curr, f in enumerate(i['front']):
-
-            sys[index]['front'][curr] = {'cas': f, 'url': add_img(f)}
-        for curr, f in enumerate(i['back']):
-
-            sys[index]['back'][curr] = {'cas': f, 'url': add_img(f)}
-    for index, up in enumerate(data['updown']['ups']):
-
-        data['updown']['ups'][index] = {'cas': up, 'url': add_img(up)}
-    for index, down in enumerate(data['updown']['downs']):
-
-        data['updown']['downs'][index] = {'cas': down, 'url': add_img(down)}
-    print(data)
+# if __name__ == '__main__':
+#     cas = '350-03-8'
+#     # kw_type = ['CAS号', '中文名称', '中文别名', '英文名称', '英文别名']
+#     # item = None
+#     # for t in kw_type:
+#     #     result = collection.find_one({t: {'$regex': '.*' + kw + '.*'}})
+#     #     if result:
+#     #         item = result
+#     #         break
+#     #
+#     # save(item)
+#     # item = collection.find_one({'CAS号': cas})
+#     data = gen_rela(cas)
+#     sys = data['synts']
+#
+#     keys = {}
+#     for index, i in enumerate(sys):
+#         for curr, f in enumerate(i['front']):
+#
+#             sys[index]['front'][curr] = {'cas': f, 'url': add_img(f)}
+#         for curr, f in enumerate(i['back']):
+#
+#             sys[index]['back'][curr] = {'cas': f, 'url': add_img(f)}
+#     for index, up in enumerate(data['updown']['ups']):
+#
+#         data['updown']['ups'][index] = {'cas': up, 'url': add_img(up)}
+#     for index, down in enumerate(data['updown']['downs']):
+#
+#         data['updown']['downs'][index] = {'cas': down, 'url': add_img(down)}
+#
+#     print(data)
 
 
 # 文献检索
@@ -144,3 +152,12 @@ def search_literature(request):
     else:
         return JsonResponse({'error': "cas can't be NULL"})
 
+if __name__ == '__main__':
+    DB = client['OLBASE']
+    document = DB['cn_olbase_rela']
+    # document.remove({})
+    res = document.find_one({'cas': '947-42-2'})
+    del res['_id']
+    print(res)
+    import json
+    print(json.dumps(res))
