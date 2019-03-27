@@ -87,10 +87,10 @@ def import_molbase(cas):
         for data in res['data']:
             front = []
             for f in data['upper']:
-                front.append({'cas': f['cas_no'], 'url': 'http'+f['s_pic'], 'name': get_node_name(f['cas_no'])})
+                front.append({'cas': f['cas_no'], 'url': 'http:'+f['s_pic'], 'name': get_node_name(f['cas_no'])})
             back = []
             for b in data['upper']:
-                back.append({'cas': b['cas_no'], 'url': 'http'+b['s_pic'], 'name': get_node_name(b['cas_no'])})
+                back.append({'cas': b['cas_no'], 'url': 'http:'+b['s_pic'], 'name': get_node_name(b['cas_no'])})
 
             trans = translator.translate(data['conditions'], src='en', dest='zh-cn').text
             datas.append({'front': front, 'back': back, 'pre': data['yield_all'], 'conditions': trans})
@@ -98,12 +98,12 @@ def import_molbase(cas):
         res = get_tag_data(up_url % id).json()
         ups = []
         for data in res['data']:
-            ups.append({'cas': data['cas_no'], 'url': 'http' + data['s_pic'], 'name': get_node_name(data['cas_no'])})
+            ups.append({'cas': data['cas_no'], 'url': 'http:' + data['s_pic'], 'name': get_node_name(data['cas_no'])})
 
         res = get_tag_data(down_url % id).json()
         downs = []
         for data in res['data']:
-            downs.append({'cas': data['cas_no'], 'url': 'http' + data['s_pic'], 'name': get_node_name(data['cas_no'])})
+            downs.append({'cas': data['cas_no'], 'url': 'http:' + data['s_pic'], 'name': get_node_name(data['cas_no'])})
 
         updowns = {'ups': ups, 'downs': downs}
 
