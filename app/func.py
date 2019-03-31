@@ -4,6 +4,7 @@ from py2neo import Graph, Node, Relationship, NodeMatcher, RelationshipMatcher
 import time
 import random
 graph = Graph('http://10.102.24.46:9292', username='neo4j', password='admin')
+from app.script import get_node_name
 
 matcher = NodeMatcher(graph)
 rela_matcher = RelationshipMatcher(graph)
@@ -34,7 +35,7 @@ def loading_updownstream(content):
         ups_img = updowns[0].xpath('./li/div/a/img/@src')
 
         for index, i in enumerate(ups):
-            up.append(dict(cas=i, url=ups_img[index]))
+            up.append(dict(cas=i, url=ups_img[index], name=get_node_name(i)))
     except:
         pass
     down = []
@@ -43,7 +44,7 @@ def loading_updownstream(content):
         downs_img = updowns[1].xpath('./li/div/a/img/@src')
 
         for index, i in enumerate(downs):
-            down.append(dict(cas=i, url=downs_img[index]))
+            down.append(dict(cas=i, url=downs_img[index], name=get_node_name(i)))
     except:
         pass
     item = eles.xpath('//div[@class="ip_box"]/dl')
@@ -119,9 +120,9 @@ def synthesis(item):
     back = []
     for index, cas in enumerate(urls[::2]):
         if cas in fronts:
-            front.append(dict(cas=cas, url=imgs[index]))
+            front.append(dict(cas=cas, url=imgs[index], name=get_node_name(cas)))
         else:
-            back.append(dict(cas=cas, url=imgs[index]))
+            back.append(dict(cas=cas, url=imgs[index], name=get_node_name(cas)))
     return {'front': front, 'back': back, 'pre': pre, 'conditions': ''}
 
 
@@ -220,13 +221,12 @@ def save(item):
     save_updown(updown, cas)
 
 
-from app.script import import_molbase
 def gen_rela(cas):
-    # synts, updown, items = parse_synthesis(cas)
-    synts, updown = import_molbase(cas)
+    synts, updown, items = parse_synthesis(cas)
+    # synts, updown = import_molbase(cas)
 
-    print(synts)
-    print(updown)
+    # print(synts)
+    # print(updown)
     # print(items)
 
     build_synt_rela(synts)
@@ -530,11 +530,11 @@ def get_wx(cas, page=None):
 
 
 if __name__ == '__main__':
-    # graph.delete_all()
+    graph.delete_all()
     # a = parse_synthesis('765-43-5')
     # print(a)
     # print(parse_updownstream('http://baike.molbase.cn/cidian/340'))
-    print(gen_rela('947-42-2'))
+    # print(gen_rela('947-42-2'))
     # a = relactionship_search('100-59-4', '149-74-6', '合成路线', '3')
     # import json
     #

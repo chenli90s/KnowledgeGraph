@@ -110,12 +110,12 @@ def import_molbase(cas):
         # print(datas)
         # print(updowns)
 
-
         return datas, updowns
 
 def get_node_name(cas):
     doc = db['Data']['cn_migration']
     res = doc.find_one({'cas': cas})
+    print(cas)
     if res:
         return res.get('中文名称', '')
     return ''

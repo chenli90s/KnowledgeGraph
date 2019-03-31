@@ -58,7 +58,11 @@ def relaction(request):
     document = DB['cn_olbase_rela']
     res = document.find_one({'cas': cas})
     if res:
-        return JsonResponse(dict(data=res['data'], code=0))
+        res = res['data']
+        res['synts'] = res['synts'][:3]
+        res['updown']['ups'] = res['updown']['ups'][:3]
+        res['updown']['downs'] = res['updown']['downs'][:3]
+        return JsonResponse(dict(data=res, code=0))
     data = gen_rela(cas)
     document.insert_many([{'cas': cas, 'data': data}])
 
@@ -82,6 +86,10 @@ def relaction(request):
     #         data['updown']['downs'][index] = {'cas': down, 'url': add_img(down)}
     #         keys.append(down)
     # print(data)
+
+    data['synts'] = data['synts'][:3]
+    data['updown']['ups'] = data['updown']['ups'][:3]
+    data['updown']['downs'] = data['updown']['downs'][:3]
     return JsonResponse(dict(data=data, code=0))
 
 def relactionshipSearch(request):
