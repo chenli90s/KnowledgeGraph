@@ -4,13 +4,13 @@ from django.http import JsonResponse
 from pymongo import MongoClient
 
 
-client = MongoClient('10.102.24.46', 27017, username='root', password='rootadmin', authSource='admin', authMechanism='DEFAULT')
+client = MongoClient('localhost', 27017)
 
 
 db = client['Data']
 collection = db['cn_olbase']
 
-from app.func import save, gen_rela, add_img, relactionship_search, func_search_new
+from app.func import save, gen_rela, add_img, relactionship_search, func_search_new, build_synt_rela, build_updowns_rela
 from app.es import search as sh
 from app.es import get_data_cas
 from app.func import get_wx
@@ -57,15 +57,19 @@ def relaction(request):
     DB = client['OLBASE']
     document = DB['cn_olbase_rela']
     res = document.find_one({'cas': cas})
-    if res:
-        res = res['data']
-        res['synts'] = res['synts'][:3]
-        res['updown']['ups'] = res['updown']['ups'][:3]
-        res['updown']['downs'] = res['updown']['downs'][:3]
-        return JsonResponse(dict(data=res, code=0))
-    data = gen_rela(cas)
-    document.insert_many([{'cas': cas, 'data': data}])
-
+    if not res:
+        # res = res['data']
+        # res['synts'] = res['synts'][:3]
+        # res['updown']['ups'] = res['updown']['ups'][:3]
+        # res['updown']['downs'] = res['updown']['downs'][:3]
+        # return JsonResponse(dict(data=res, code=0))
+        res = gen_rela(cas)
+        document.insert_many([{'cas': cas, 'data': res}])
+        res = {'cas': cas, 'data': res}
+    data = res['data']
+    print(data)
+    build_updowns_rela(data['updown'], cas)
+    build_synt_rela(data['synts'])
     # sys = data['synts']
     # keys = []
     # for index, i in enumerate(sys):

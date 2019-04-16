@@ -5,10 +5,10 @@ from googletrans import Translator
 translator = Translator(service_urls=['translate.google.cn'])
 
 
-db = pymongo.MongoClient('10.102.24.46', port=27017)
+db = pymongo.MongoClient('localhost', port=27017)
 collection = db['Data']['cn_olbase_sup'].find()
 
-es = Elasticsearch('10.102.24.46:9200')
+es = Elasticsearch('localhost:9200')
 
 # cates = {'生物及医药化学品': 1, '农用化学品': 2, '有机原料与中间体': 4, '催化剂及助剂': 8, '香精与香料': 5, '染料及颜料': 6, '无机化学品': 7, '其他': 8, '食品与饲料添加剂': 9}
 

@@ -3,7 +3,7 @@ from lxml import etree
 from py2neo import Graph, Node, Relationship, NodeMatcher, RelationshipMatcher
 import time
 import random
-graph = Graph('http://10.102.24.46:9292', username='neo4j', password='admin')
+graph = Graph('http://localhost:7474', username='neo4j', password='admin')
 from app.script import get_node_name
 
 matcher = NodeMatcher(graph)
@@ -229,8 +229,8 @@ def gen_rela(cas):
     # print(updown)
     # print(items)
 
-    build_synt_rela(synts)
-    build_updowns_rela(updown, cas)
+    # build_synt_rela(synts)
+    # build_updowns_rela(updown, cas)
 
     # return {'synts': synts, 'updown': updown, 'items': items, 'info': {'cas': cas, 'url': add_img(cas)}}
     return {'synts': synts, 'updown': updown, 'info': {'cas': cas, 'url': add_img(cas)}}

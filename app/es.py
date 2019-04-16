@@ -1,7 +1,7 @@
 from elasticsearch import Elasticsearch
 import json
 
-es = Elasticsearch('10.102.24.46:9200')
+es = Elasticsearch('localhost:9200')
 
 def search(kw, pageIndex, pageSize, cate=None):
     body = {
